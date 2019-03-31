@@ -31,3 +31,8 @@ The full set of lint checks can be run with:
 
     $ make check
 
+## Running Locally
+
+The service can be run locally with:
+
+    $ make compose-up
