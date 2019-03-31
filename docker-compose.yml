@@ -1,0 +1,16 @@
+version: '3.7'
+services:
+  mc:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    ports:
+      - 9090:9090
+      - 8080:8080
+    environment:
+      API_PORT: 8080
+      CAPACITY: 128m
+      LOG_LEVEL: info
+      METRICS_PORT: 9090
+      NUM_REPLICAS: 160
+      NUM_CACHES: 20
