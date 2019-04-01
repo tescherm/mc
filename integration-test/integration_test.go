@@ -106,8 +106,22 @@ func cacheWorker(t *testing.T, jobs <-chan int, results chan<- string) {
 		key := randAlphaNumericString(10)
 		value := randAlphaNumericString(100)
 
-		err := mc.Set(ctx, key, []byte(value))
+		retValue, err := mc.Get(ctx, key)
 		require.NoError(t, err)
+		require.Nil(t, retValue)
+
+		err = mc.Set(ctx, key, []byte(value))
+		require.NoError(t, err)
+
+		retValue, err = mc.Get(ctx, key)
+		require.NoError(t, err)
+		require.NotNil(t, retValue)
+		require.Equal(t, value, string(retValue))
+
+		retValue, err = mc.Remove(ctx, key)
+		require.NoError(t, err)
+		require.NotNil(t, retValue)
+		require.Equal(t, value, string(retValue))
 
 		results <- key
 	}
