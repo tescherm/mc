@@ -7,6 +7,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/tescherm/mc/core/cache"
 )
 
 const kvSize = 4 + 5
@@ -22,19 +23,32 @@ const (
 	nCacheSize   = nPrivateKeys*nWorkers + nSharedKeys
 )
 
+func get(c cache.Cache, key string) []byte {
+	item := c.Get(key)
+	if item == nil {
+		return nil
+	}
+	return item.Value
+}
+
 func set(c *Caches, key string, val []byte) {
 	keyCache := c.CacheForKey(key)
-	keyCache.Set(key, val)
+	item := &cache.Item{
+		Key:   key,
+		Value: val,
+	}
+	keyCache.Set(item)
 }
 
 func remove(c *Caches, key string) []byte {
 	keyCache := c.CacheForKey(key)
-	return keyCache.Remove(key)
+	item := keyCache.Remove(key)
+	return item.Value
 }
 
 func checkHit(t *testing.T, c *Caches, key string, val []byte) {
 	keyCache := c.CacheForKey(key)
-	i := keyCache.Get(key)
+	i := get(keyCache, key)
 
 	require.NotNil(t, i)
 	require.EqualValues(t, val, i)
@@ -42,7 +56,7 @@ func checkHit(t *testing.T, c *Caches, key string, val []byte) {
 
 func checkMiss(t *testing.T, c *Caches, key string) {
 	keyCache := c.CacheForKey(key)
-	i := keyCache.Get(key)
+	i := get(keyCache, key)
 	require.Nil(t, i)
 }
 
@@ -52,7 +66,7 @@ func checkSize(t *testing.T, c *Caches, size int) {
 
 func checkHitInRange(t *testing.T, c *Caches, key string, vals [][]byte) {
 	keyCache := c.CacheForKey(key)
-	i := keyCache.Get(key)
+	i := get(keyCache, key)
 	require.NotNil(t, i)
 
 	for _, val := range vals {

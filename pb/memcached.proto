@@ -3,6 +3,8 @@ syntax = "proto3";
 message Item {
     string key = 1;
     bytes value = 2;
+
+    int64 casID = 3;
 }
 
 message GetRequest {
@@ -18,6 +20,14 @@ message SetRequest {
 }
 
 message SetResponse {
+    Item item = 1;
+}
+
+message CompareAndSwapRequest {
+    Item item = 1;
+}
+
+message CompareAndSwapResponse {
     Item item = 1;
 }
 
@@ -48,6 +58,7 @@ message SizeResponse {
 service Memcached {
     rpc Get(GetRequest) returns (GetResponse) {};
     rpc Set(SetRequest) returns (SetResponse) {};
+    rpc CompareAndSwap(CompareAndSwapRequest) returns (CompareAndSwapResponse) {};
     rpc Remove(RemoveRequest) returns (RemoveResponse) {};
     rpc Clear(ClearRequest) returns (ClearResponse) {};
     rpc Size(SizeRequest) returns (SizeResponse) {};

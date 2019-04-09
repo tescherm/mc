@@ -8,14 +8,26 @@ import (
 	"github.com/pkg/errors"
 	"github.com/tescherm/mc/pb"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type Value []byte
 
+type Item struct {
+	Key   string
+	Value []byte
+
+	casID int64
+}
+
+var ErrCASConflict = errors.New("compare-and-swap conflict")
+
 type MemcachedClient interface {
-	Get(ctx context.Context, key string) (Value, error)
-	Set(ctx context.Context, key string, value Value) error
-	Remove(ctx context.Context, key string) (Value, error)
+	Get(ctx context.Context, key string) (*Item, error)
+	Set(ctx context.Context, item *Item) error
+	CompareAndSwap(ctx context.Context, item *Item) error
+	Remove(ctx context.Context, key string) (*Item, error)
 	Clear(ctx context.Context) error
 	Size(ctx context.Context) (uint64, error)
 }
@@ -46,37 +58,49 @@ func New(config Config) (MemcachedClient, error) {
 	return &client{grpc: g}, nil
 }
 
-func (c *client) Get(ctx context.Context, key string) (Value, error) {
+func (c *client) Get(ctx context.Context, key string) (*Item, error) {
 	res, err := c.grpc.Get(ctx, &memcached.GetRequest{
 		Key: key,
 	})
 	if err != nil {
 		return nil, errors.Wrapf(err, "cache get (%s) failed", key)
 	}
-	return res.Item.Value, nil
+
+	return fromMemcachedItem(res.Item), nil
 }
 
-func (c *client) Set(ctx context.Context, key string, value Value) error {
+func (c *client) Set(ctx context.Context, item *Item) error {
 	_, err := c.grpc.Set(ctx, &memcached.SetRequest{
-		Item: &memcached.Item{
-			Key:   key,
-			Value: value,
-		},
+		Item: toMemcachedItem(item),
 	})
 	if err != nil {
-		return errors.Wrapf(err, "cache set (%s) failed", key)
+		return errors.Wrapf(err, "cache set (%s) failed", item.Key)
 	}
 	return nil
 }
 
-func (c *client) Remove(ctx context.Context, key string) (Value, error) {
+func (c *client) CompareAndSwap(ctx context.Context, item *Item) error {
+	_, err := c.grpc.CompareAndSwap(ctx, &memcached.CompareAndSwapRequest{
+		Item: toMemcachedItem(item),
+	})
+	if err != nil {
+		code := status.Code(err)
+		if code == codes.Aborted {
+			return ErrCASConflict
+		}
+		return errors.Wrapf(err, "cache compare-and-swap (%s) failed", item.Key)
+	}
+	return nil
+}
+
+func (c *client) Remove(ctx context.Context, key string) (*Item, error) {
 	res, err := c.grpc.Remove(ctx, &memcached.RemoveRequest{
 		Key: key,
 	})
 	if err != nil {
 		return nil, errors.Wrapf(err, "cache remove (%s) failed", key)
 	}
-	return res.Item.Value, nil
+	return fromMemcachedItem(res.Item), nil
 }
 
 func (c *client) Clear(ctx context.Context) error {
@@ -93,4 +117,26 @@ func (c *client) Size(ctx context.Context) (uint64, error) {
 		return 1, errors.Wrapf(err, "cache get size failed")
 	}
 	return res.Size, nil
+}
+
+func toMemcachedItem(item *Item) *memcached.Item {
+	if item == nil {
+		return nil
+	}
+	return &memcached.Item{
+		Key:   item.Key,
+		Value: item.Value,
+		CasID: item.casID,
+	}
+}
+
+func fromMemcachedItem(item *memcached.Item) *Item {
+	if item == nil {
+		return nil
+	}
+	return &Item{
+		Key:   item.Key,
+		Value: item.Value,
+		casID: item.CasID,
+	}
 }

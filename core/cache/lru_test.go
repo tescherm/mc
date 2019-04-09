@@ -22,23 +22,36 @@ const (
 	nCacheSize   = nPrivateKeys*nWorkers + nSharedKeys
 )
 
-func set(c Cache, key string, val Value) {
-	c.Set(key, val)
+func get(c Cache, key string) []byte {
+	item := c.Get(key)
+	if item == nil {
+		return nil
+	}
+	return item.Value
 }
 
-func remove(c Cache, key string) Value {
-	return c.Remove(key)
+func set(c Cache, key string, val []byte) {
+	item := &Item{
+		Key:   key,
+		Value: val,
+	}
+	c.Set(item)
 }
 
-func checkHit(t *testing.T, c Cache, key string, val Value) {
-	i := c.Get(key)
+func remove(c Cache, key string) []byte {
+	item := c.Remove(key)
+	return item.Value
+}
+
+func checkHit(t *testing.T, c Cache, key string, val []byte) {
+	i := get(c, key)
 
 	require.NotNil(t, i)
 	require.EqualValues(t, val, i)
 }
 
 func checkMiss(t *testing.T, c Cache, key string) {
-	i := c.Get(key)
+	i := get(c, key)
 	require.Nil(t, i)
 }
 
@@ -47,7 +60,7 @@ func checkSize(t *testing.T, c Cache, size int) {
 }
 
 func checkHitInRange(t *testing.T, c Cache, key string, vals [][]byte) {
-	i := c.Get(key)
+	i := get(c, key)
 	require.NotNil(t, i)
 
 	for _, val := range vals {
@@ -248,6 +261,62 @@ func TestCacheLRUUpdates(t *testing.T) {
 
 	require.EqualValues(t, 3*kvSize, stats.CurrentCapacity)
 	checkSize(t, cache, 3)
+}
+
+func TestCacheSet(t *testing.T) {
+	t.Parallel()
+
+	cache := NewLRUCache(Config{Capacity: 100000})
+
+	item := NewItem("key1", value, 0)
+	cache.Set(item)
+
+	var wg sync.WaitGroup
+	for i := 0; i < 5; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			cache.Set(item)
+		}()
+	}
+	wg.Wait()
+
+	item = cache.Get("key1")
+
+	// 5 Gets, plus this one
+	require.EqualValues(t, 6, item.VersionID())
+}
+
+func TestCompareAndSwap(t *testing.T) {
+	cache := NewLRUCache(Config{Capacity: 100000})
+
+	k := "key"
+	v := func(b int) []byte {
+		return []byte{byte(b)}
+	}
+
+	// let's simulate storing a counter, similar to what's mentioned at
+	// https://en.wikipedia.org/wiki/Amazon_SimpleDB#Conditional_Put_and_Delete
+	set(cache, k, v(1))
+
+	item1 := cache.Get(k)
+	item1.Value = v(2)
+	require.EqualValues(t, 1, item1.VersionID())
+
+	item2 := cache.Get(k)
+	item2.Value = v(2)
+	require.EqualValues(t, 1, item2.VersionID())
+
+	swapped := cache.CompareAndSwap(item1)
+	require.True(t, swapped)
+
+	swapped = cache.CompareAndSwap(item2)
+	require.False(t, swapped)
+
+	item2 = cache.Get(k)
+	item2.Value = v(3)
+	swapped = cache.CompareAndSwap(item2)
+	require.True(t, swapped)
 }
 
 func TestCacheClear(t *testing.T) {

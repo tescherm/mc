@@ -5,27 +5,48 @@ import (
 	"sync"
 )
 
-type Value []byte
+type Item struct {
+	Key   string
+	Value []byte
+
+	versionID int64
+}
+
+func NewItem(key string, value []byte, versionID int64) *Item {
+	return &Item{
+		Key:       key,
+		Value:     value,
+		versionID: versionID,
+	}
+}
+
+func (i *Item) VersionID() int64 {
+	return i.versionID
+}
+
+func (i *Item) Size() uint64 {
+	return uint64(len(i.Key) + len(i.Value))
+}
 
 type Cache interface {
-	Get(key string) Value
-	Set(key string, value Value)
-	Remove(key string) Value
+	Get(key string) *Item
+	Set(item *Item)
+	CompareAndSwap(item *Item) (swapped bool)
+	Remove(key string) *Item
 	Clear()
 	Size() uint64
 	Stats() Stats
 }
 
 type cacheNode struct {
-	key   string
-	value Value
+	item *Item
 
 	prev *cacheNode
 	next *cacheNode
 }
 
 func (n *cacheNode) Size() uint64 {
-	return uint64(len(n.key) + len(n.value))
+	return n.item.Size()
 }
 
 type cacheList struct {
@@ -154,7 +175,7 @@ type LRUCache struct {
 	misses  uint64
 }
 
-func (c *LRUCache) Get(key string) Value {
+func (c *LRUCache) Get(key string) *Item {
 	c.Lock()
 	defer c.Unlock()
 
@@ -167,43 +188,67 @@ func (c *LRUCache) Get(key string) Value {
 	c.hits++
 	c.list.setUsed(node)
 
-	return node.value
+	item := Item(*node.item)
+	return &item
 }
 
-func (c *LRUCache) Set(key string, value Value) {
+func (c *LRUCache) Set(item *Item) {
 	c.Lock()
 	defer c.Unlock()
 
-	node, ok := c.nodeMap[key]
+	c.doSet(item)
+}
+
+func (c *LRUCache) CompareAndSwap(item *Item) bool {
+	c.Lock()
+	defer c.Unlock()
+
+	node, ok := c.nodeMap[item.Key]
 
 	if ok {
-		node.value = value
+		if node.item.VersionID() != item.VersionID() {
+			return false
+		}
+	}
+
+	c.doSet(item)
+	return true
+}
+
+func (c *LRUCache) doSet(item *Item) {
+	node, ok := c.nodeMap[item.Key]
+
+	if ok {
+		// entry already exists
+		node.item = item
 		c.list.setUsed(node)
 
 		c.currentCapacity -= node.Size()
 	} else {
+		// we are seeing this item for the first time
 		node = &cacheNode{
-			key:   key,
-			value: value,
+			item: item,
 		}
 		c.list.add(node)
 	}
 
-	c.nodeMap[key] = node
+	node.item.versionID++
+
+	c.nodeMap[item.Key] = node
 	c.currentCapacity += node.Size()
 	c.sets++
 
 	for c.currentCapacity > c.maxCapacity {
 		// evict the least recently used by removing at the head
 		del := c.list.shift()
-		delete(c.nodeMap, del.key)
+		delete(c.nodeMap, del.item.Key)
 
 		c.currentCapacity -= del.Size()
 		c.evicts++
 	}
 }
 
-func (c *LRUCache) Remove(key string) Value {
+func (c *LRUCache) Remove(key string) *Item {
 	c.Lock()
 	defer c.Unlock()
 
@@ -218,7 +263,8 @@ func (c *LRUCache) Remove(key string) Value {
 	c.currentCapacity -= node.Size()
 	c.removes++
 
-	return node.value
+	item := Item(*node.item)
+	return &item
 }
 
 func (c *LRUCache) Clear() {
@@ -257,8 +303,8 @@ func (c *LRUCache) Stats() Stats {
 func (c *LRUCache) String() string {
 	var buf bytes.Buffer
 	buf.WriteString("cache =====\n")
-	for item := c.list.tail; item != nil; item = item.next {
-		buf.WriteString(item.key)
+	for node := c.list.tail; node != nil; node = node.next {
+		buf.WriteString(node.item.Key)
 		buf.WriteString("\n")
 	}
 	buf.WriteString("=====\n")

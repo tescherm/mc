@@ -28,6 +28,7 @@ const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 type Item struct {
 	Key                  string   `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
 	Value                []byte   `protobuf:"bytes,2,opt,name=value,proto3" json:"value,omitempty"`
+	CasID                int64    `protobuf:"varint,3,opt,name=casID,proto3" json:"casID,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -70,6 +71,13 @@ func (m *Item) GetValue() []byte {
 		return m.Value
 	}
 	return nil
+}
+
+func (m *Item) GetCasID() int64 {
+	if m != nil {
+		return m.CasID
+	}
+	return 0
 }
 
 type GetRequest struct {
@@ -228,6 +236,84 @@ func (m *SetResponse) GetItem() *Item {
 	return nil
 }
 
+type CompareAndSwapRequest struct {
+	Item                 *Item    `protobuf:"bytes,1,opt,name=item,proto3" json:"item,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *CompareAndSwapRequest) Reset()         { *m = CompareAndSwapRequest{} }
+func (m *CompareAndSwapRequest) String() string { return proto.CompactTextString(m) }
+func (*CompareAndSwapRequest) ProtoMessage()    {}
+func (*CompareAndSwapRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_8892273135fec606, []int{5}
+}
+
+func (m *CompareAndSwapRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_CompareAndSwapRequest.Unmarshal(m, b)
+}
+func (m *CompareAndSwapRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_CompareAndSwapRequest.Marshal(b, m, deterministic)
+}
+func (m *CompareAndSwapRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_CompareAndSwapRequest.Merge(m, src)
+}
+func (m *CompareAndSwapRequest) XXX_Size() int {
+	return xxx_messageInfo_CompareAndSwapRequest.Size(m)
+}
+func (m *CompareAndSwapRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_CompareAndSwapRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_CompareAndSwapRequest proto.InternalMessageInfo
+
+func (m *CompareAndSwapRequest) GetItem() *Item {
+	if m != nil {
+		return m.Item
+	}
+	return nil
+}
+
+type CompareAndSwapResponse struct {
+	Item                 *Item    `protobuf:"bytes,1,opt,name=item,proto3" json:"item,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *CompareAndSwapResponse) Reset()         { *m = CompareAndSwapResponse{} }
+func (m *CompareAndSwapResponse) String() string { return proto.CompactTextString(m) }
+func (*CompareAndSwapResponse) ProtoMessage()    {}
+func (*CompareAndSwapResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_8892273135fec606, []int{6}
+}
+
+func (m *CompareAndSwapResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_CompareAndSwapResponse.Unmarshal(m, b)
+}
+func (m *CompareAndSwapResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_CompareAndSwapResponse.Marshal(b, m, deterministic)
+}
+func (m *CompareAndSwapResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_CompareAndSwapResponse.Merge(m, src)
+}
+func (m *CompareAndSwapResponse) XXX_Size() int {
+	return xxx_messageInfo_CompareAndSwapResponse.Size(m)
+}
+func (m *CompareAndSwapResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_CompareAndSwapResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_CompareAndSwapResponse proto.InternalMessageInfo
+
+func (m *CompareAndSwapResponse) GetItem() *Item {
+	if m != nil {
+		return m.Item
+	}
+	return nil
+}
+
 type RemoveRequest struct {
 	Key                  string   `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
@@ -239,7 +325,7 @@ func (m *RemoveRequest) Reset()         { *m = RemoveRequest{} }
 func (m *RemoveRequest) String() string { return proto.CompactTextString(m) }
 func (*RemoveRequest) ProtoMessage()    {}
 func (*RemoveRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_8892273135fec606, []int{5}
+	return fileDescriptor_8892273135fec606, []int{7}
 }
 
 func (m *RemoveRequest) XXX_Unmarshal(b []byte) error {
@@ -278,7 +364,7 @@ func (m *RemoveResponse) Reset()         { *m = RemoveResponse{} }
 func (m *RemoveResponse) String() string { return proto.CompactTextString(m) }
 func (*RemoveResponse) ProtoMessage()    {}
 func (*RemoveResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_8892273135fec606, []int{6}
+	return fileDescriptor_8892273135fec606, []int{8}
 }
 
 func (m *RemoveResponse) XXX_Unmarshal(b []byte) error {
@@ -316,7 +402,7 @@ func (m *ClearRequest) Reset()         { *m = ClearRequest{} }
 func (m *ClearRequest) String() string { return proto.CompactTextString(m) }
 func (*ClearRequest) ProtoMessage()    {}
 func (*ClearRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_8892273135fec606, []int{7}
+	return fileDescriptor_8892273135fec606, []int{9}
 }
 
 func (m *ClearRequest) XXX_Unmarshal(b []byte) error {
@@ -347,7 +433,7 @@ func (m *ClearResponse) Reset()         { *m = ClearResponse{} }
 func (m *ClearResponse) String() string { return proto.CompactTextString(m) }
 func (*ClearResponse) ProtoMessage()    {}
 func (*ClearResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_8892273135fec606, []int{8}
+	return fileDescriptor_8892273135fec606, []int{10}
 }
 
 func (m *ClearResponse) XXX_Unmarshal(b []byte) error {
@@ -378,7 +464,7 @@ func (m *SizeRequest) Reset()         { *m = SizeRequest{} }
 func (m *SizeRequest) String() string { return proto.CompactTextString(m) }
 func (*SizeRequest) ProtoMessage()    {}
 func (*SizeRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_8892273135fec606, []int{9}
+	return fileDescriptor_8892273135fec606, []int{11}
 }
 
 func (m *SizeRequest) XXX_Unmarshal(b []byte) error {
@@ -410,7 +496,7 @@ func (m *SizeResponse) Reset()         { *m = SizeResponse{} }
 func (m *SizeResponse) String() string { return proto.CompactTextString(m) }
 func (*SizeResponse) ProtoMessage()    {}
 func (*SizeResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_8892273135fec606, []int{10}
+	return fileDescriptor_8892273135fec606, []int{12}
 }
 
 func (m *SizeResponse) XXX_Unmarshal(b []byte) error {
@@ -444,6 +530,8 @@ func init() {
 	proto.RegisterType((*GetResponse)(nil), "GetResponse")
 	proto.RegisterType((*SetRequest)(nil), "SetRequest")
 	proto.RegisterType((*SetResponse)(nil), "SetResponse")
+	proto.RegisterType((*CompareAndSwapRequest)(nil), "CompareAndSwapRequest")
+	proto.RegisterType((*CompareAndSwapResponse)(nil), "CompareAndSwapResponse")
 	proto.RegisterType((*RemoveRequest)(nil), "RemoveRequest")
 	proto.RegisterType((*RemoveResponse)(nil), "RemoveResponse")
 	proto.RegisterType((*ClearRequest)(nil), "ClearRequest")
@@ -455,26 +543,29 @@ func init() {
 func init() { proto.RegisterFile("memcached.proto", fileDescriptor_8892273135fec606) }
 
 var fileDescriptor_8892273135fec606 = []byte{
-	// 295 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x92, 0xcd, 0x4a, 0xc3, 0x40,
-	0x10, 0xc7, 0x13, 0x9b, 0x16, 0xfa, 0xcf, 0x97, 0x2c, 0x1e, 0x6a, 0x0e, 0x52, 0x07, 0xc4, 0x40,
-	0x61, 0x0f, 0xf5, 0x11, 0x3c, 0x14, 0x0f, 0x5e, 0x76, 0x9f, 0x20, 0xd6, 0x01, 0x83, 0x8d, 0xa9,
-	0xcd, 0xb6, 0x60, 0xdf, 0xd2, 0x37, 0x92, 0x6c, 0x12, 0x9a, 0x20, 0x7e, 0xdc, 0x76, 0x92, 0xdf,
-	0xfc, 0x27, 0xbf, 0xc9, 0x22, 0x2e, 0xb8, 0x58, 0x67, 0xeb, 0x17, 0x7e, 0x96, 0xdb, 0x5d, 0x69,
-	0x4a, 0x92, 0xf0, 0x1e, 0x0c, 0x17, 0xe2, 0x1c, 0xa3, 0x57, 0xfe, 0x98, 0xb9, 0x73, 0x37, 0x9d,
-	0xaa, 0xfa, 0x28, 0x2e, 0x30, 0x3e, 0x64, 0x9b, 0x3d, 0xcf, 0xce, 0xe6, 0x6e, 0x1a, 0xa8, 0xa6,
-	0xa0, 0x2b, 0x60, 0xc5, 0x46, 0xf1, 0xfb, 0x9e, 0x2b, 0xf3, 0xbd, 0x8b, 0x52, 0xf8, 0xf6, 0x7d,
-	0xb5, 0x2d, 0xdf, 0x2a, 0x16, 0x97, 0xf0, 0x72, 0xc3, 0x85, 0x25, 0xfc, 0xe5, 0x58, 0xd6, 0xb3,
-	0x94, 0x7d, 0x44, 0xb7, 0x80, 0x3e, 0x25, 0xfd, 0x02, 0xa6, 0xf0, 0xf5, 0xff, 0x22, 0xaf, 0x11,
-	0x2a, 0x2e, 0xca, 0x03, 0xff, 0xfc, 0x7d, 0x0b, 0x44, 0x1d, 0xf2, 0x77, 0x5e, 0x84, 0xe0, 0x7e,
-	0xc3, 0xd9, 0xae, 0x8d, 0xa3, 0x18, 0x61, 0x5b, 0x37, 0xbd, 0x14, 0xc2, 0xd7, 0xf9, 0xb1, 0x1b,
-	0x47, 0x84, 0xa0, 0x29, 0xdb, 0x68, 0x01, 0xaf, 0xca, 0x8f, 0x6c, 0xa3, 0x3d, 0x65, 0xcf, 0xcb,
-	0x4f, 0x17, 0xd3, 0xc7, 0xee, 0x27, 0x08, 0xc2, 0x68, 0xc5, 0x46, 0xf8, 0xf2, 0xb4, 0xd4, 0x24,
-	0x90, 0xbd, 0x0d, 0x92, 0x53, 0x33, 0xda, 0x32, 0xba, 0xcf, 0xe8, 0x01, 0xb3, 0xc0, 0xa4, 0xd1,
-	0x12, 0x91, 0x1c, 0xac, 0x20, 0x89, 0xe5, 0xd0, 0x97, 0x1c, 0x91, 0x62, 0x6c, 0x35, 0x44, 0x28,
-	0xfb, 0x7a, 0x49, 0x24, 0x87, 0x76, 0x8e, 0xb8, 0x81, 0x57, 0x0b, 0x89, 0x40, 0xf6, 0x34, 0x93,
-	0x50, 0xf6, 0x2d, 0xc9, 0x79, 0x9a, 0xd8, 0xbb, 0x74, 0xf7, 0x15, 0x00, 0x00, 0xff, 0xff, 0x15,
-	0x24, 0x2e, 0x6d, 0x5e, 0x02, 0x00, 0x00,
+	// 352 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x93, 0xdf, 0x6a, 0xe2, 0x40,
+	0x18, 0xc5, 0x13, 0x13, 0x05, 0x4f, 0xfe, 0xb8, 0x0c, 0xbb, 0xae, 0x9b, 0x8b, 0xc5, 0x0e, 0x94,
+	0x06, 0x84, 0xb9, 0xd0, 0x27, 0x28, 0x0a, 0xe2, 0x45, 0x6f, 0x66, 0x9e, 0x20, 0xd5, 0x0f, 0x2a,
+	0x35, 0x26, 0x35, 0xd1, 0x52, 0x1f, 0xa4, 0xcf, 0x5b, 0x32, 0x51, 0x4c, 0x5a, 0x5b, 0xbd, 0x9b,
+	0x33, 0x39, 0xf3, 0x9b, 0xf0, 0xfb, 0x12, 0x74, 0x62, 0x8a, 0xe7, 0xd1, 0xfc, 0x89, 0x16, 0x22,
+	0xdd, 0x24, 0x79, 0xc2, 0x27, 0xb0, 0x67, 0x39, 0xc5, 0xec, 0x17, 0xac, 0x67, 0x7a, 0xeb, 0x99,
+	0x7d, 0x33, 0x6c, 0xcb, 0x62, 0xc9, 0x7e, 0xa3, 0xb9, 0x8b, 0x56, 0x5b, 0xea, 0x35, 0xfa, 0x66,
+	0xe8, 0xca, 0x32, 0x14, 0xbb, 0xf3, 0x28, 0x9b, 0x4d, 0x7a, 0x56, 0xdf, 0x0c, 0x2d, 0x59, 0x06,
+	0xfe, 0x1f, 0x98, 0x52, 0x2e, 0xe9, 0x65, 0x4b, 0x59, 0xfe, 0x95, 0xc5, 0x43, 0x38, 0xfa, 0x79,
+	0x96, 0x26, 0xeb, 0x8c, 0xd8, 0x3f, 0xd8, 0xcb, 0x9c, 0x62, 0xdd, 0x70, 0x86, 0x4d, 0x51, 0xbc,
+	0x81, 0xd4, 0x5b, 0xfc, 0x0e, 0x50, 0x27, 0xd2, 0x0f, 0xc5, 0x10, 0x8e, 0xba, 0x0e, 0x39, 0xc4,
+	0x9f, 0x71, 0x12, 0xa7, 0xd1, 0x86, 0xee, 0xd7, 0x0b, 0xf5, 0x1a, 0xa5, 0x57, 0xd0, 0x47, 0xe8,
+	0x7e, 0x3e, 0x73, 0xf9, 0xa2, 0x1b, 0x78, 0x92, 0xe2, 0x64, 0x47, 0xdf, 0x8b, 0x18, 0xc0, 0x3f,
+	0x56, 0x2e, 0xf3, 0x7c, 0xb8, 0xe3, 0x15, 0x45, 0x9b, 0x03, 0x8e, 0x77, 0xe0, 0x1d, 0x72, 0x79,
+	0x96, 0x7b, 0x70, 0xd4, 0x72, 0x7f, 0xbc, 0x8e, 0x73, 0xb8, 0x65, 0x3c, 0xa0, 0x19, 0xec, 0x6c,
+	0xb9, 0x27, 0x8d, 0xb6, 0xa5, 0x5e, 0x0f, 0xdf, 0x1b, 0x68, 0x3f, 0x1c, 0xbf, 0x01, 0xc6, 0x61,
+	0x4d, 0x29, 0x67, 0x8e, 0x38, 0x4d, 0x2f, 0x70, 0x45, 0x65, 0x54, 0xdc, 0x28, 0x3a, 0x4a, 0x77,
+	0x54, 0xb5, 0xa3, 0x6a, 0x9d, 0x31, 0xfc, 0xba, 0x2e, 0xd6, 0x15, 0x67, 0x9d, 0x07, 0x7f, 0xc5,
+	0x79, 0xaf, 0xdc, 0x60, 0x03, 0xb4, 0x4a, 0x37, 0xcc, 0x17, 0x35, 0x8f, 0x41, 0x47, 0xd4, 0xa5,
+	0x71, 0x83, 0x85, 0x68, 0x6a, 0x17, 0xcc, 0x13, 0x55, 0x47, 0x81, 0x2f, 0xea, 0x8a, 0x0c, 0x76,
+	0x0b, 0xbb, 0xb0, 0xc2, 0x5c, 0x51, 0x71, 0x15, 0x78, 0xa2, 0xaa, 0x8a, 0x1b, 0x8f, 0x2d, 0xfd,
+	0x3f, 0x8c, 0x3e, 0x02, 0x00, 0x00, 0xff, 0xff, 0xef, 0xee, 0x45, 0x73, 0x22, 0x03, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -491,6 +582,7 @@ const _ = grpc.SupportPackageIsVersion4
 type MemcachedClient interface {
 	Get(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*GetResponse, error)
 	Set(ctx context.Context, in *SetRequest, opts ...grpc.CallOption) (*SetResponse, error)
+	CompareAndSwap(ctx context.Context, in *CompareAndSwapRequest, opts ...grpc.CallOption) (*CompareAndSwapResponse, error)
 	Remove(ctx context.Context, in *RemoveRequest, opts ...grpc.CallOption) (*RemoveResponse, error)
 	Clear(ctx context.Context, in *ClearRequest, opts ...grpc.CallOption) (*ClearResponse, error)
 	Size(ctx context.Context, in *SizeRequest, opts ...grpc.CallOption) (*SizeResponse, error)
@@ -516,6 +608,15 @@ func (c *memcachedClient) Get(ctx context.Context, in *GetRequest, opts ...grpc.
 func (c *memcachedClient) Set(ctx context.Context, in *SetRequest, opts ...grpc.CallOption) (*SetResponse, error) {
 	out := new(SetResponse)
 	err := c.cc.Invoke(ctx, "/Memcached/Set", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *memcachedClient) CompareAndSwap(ctx context.Context, in *CompareAndSwapRequest, opts ...grpc.CallOption) (*CompareAndSwapResponse, error) {
+	out := new(CompareAndSwapResponse)
+	err := c.cc.Invoke(ctx, "/Memcached/CompareAndSwap", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -553,6 +654,7 @@ func (c *memcachedClient) Size(ctx context.Context, in *SizeRequest, opts ...grp
 type MemcachedServer interface {
 	Get(context.Context, *GetRequest) (*GetResponse, error)
 	Set(context.Context, *SetRequest) (*SetResponse, error)
+	CompareAndSwap(context.Context, *CompareAndSwapRequest) (*CompareAndSwapResponse, error)
 	Remove(context.Context, *RemoveRequest) (*RemoveResponse, error)
 	Clear(context.Context, *ClearRequest) (*ClearResponse, error)
 	Size(context.Context, *SizeRequest) (*SizeResponse, error)
@@ -567,6 +669,9 @@ func (*UnimplementedMemcachedServer) Get(ctx context.Context, req *GetRequest) (
 }
 func (*UnimplementedMemcachedServer) Set(ctx context.Context, req *SetRequest) (*SetResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Set not implemented")
+}
+func (*UnimplementedMemcachedServer) CompareAndSwap(ctx context.Context, req *CompareAndSwapRequest) (*CompareAndSwapResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CompareAndSwap not implemented")
 }
 func (*UnimplementedMemcachedServer) Remove(ctx context.Context, req *RemoveRequest) (*RemoveResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Remove not implemented")
@@ -614,6 +719,24 @@ func _Memcached_Set_Handler(srv interface{}, ctx context.Context, dec func(inter
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(MemcachedServer).Set(ctx, req.(*SetRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Memcached_CompareAndSwap_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CompareAndSwapRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MemcachedServer).CompareAndSwap(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/Memcached/CompareAndSwap",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MemcachedServer).CompareAndSwap(ctx, req.(*CompareAndSwapRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -683,6 +806,10 @@ var _Memcached_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Set",
 			Handler:    _Memcached_Set_Handler,
+		},
+		{
+			MethodName: "CompareAndSwap",
+			Handler:    _Memcached_CompareAndSwap_Handler,
 		},
 		{
 			MethodName: "Remove",
